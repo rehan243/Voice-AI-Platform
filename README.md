@@ -75,40 +75,6 @@ This system powers the voice AI capabilities at **Reallytics.ai**, processing li
 | **Data** | PostgreSQL, Redis, Real-time streaming |
 | **Monitoring** | Grafana, CloudWatch, Custom dashboards |
 
-## Project Structure
-
-```
-voice-ai-platform/
-├── gateway/
-│   ├── websocket_handler.py       # WebSocket connection management
-│   ├── session_manager.py         # Call session tracking
-│   └── audio_ingestion.py         # Raw audio stream processing
-├── kafka/
-│   ├── producer.py                # Audio chunk producer
-│   ├── consumer.py                # Stream consumers
-│   └── config.py                  # Kafka cluster configuration
-├── stt_engine/
-│   ├── grpc_server.cpp            # High-performance gRPC STT service
-│   ├── whisper_inference.py       # Whisper model inference
-│   ├── cuda_kernels/              # Custom CUDA kernels for acceleration
-│   └── proto/                     # gRPC protocol definitions
-├── analytics/
-│   ├── sentiment_analyzer.py      # Real-time sentiment pipeline
-│   ├── emotion_detector.py        # Voice emotion recognition
-│   └── insights_engine.py         # Business signal extraction
-├── infrastructure/
-│   ├── docker-compose.yml         # Local development setup
-│   ├── Dockerfile                 # Production container
-│   ├── ecs-task-definition.json   # AWS ECS deployment
-│   └── kafka-setup.yml            # Kafka cluster config
-├── tests/
-│   ├── test_gateway.py
-│   ├── test_stt_engine.py
-│   └── test_analytics.py
-├── requirements.txt
-└── README.md
-```
-
 ## Performance Benchmarks
 
 | Metric | Value |
@@ -121,38 +87,10 @@ voice-ai-platform/
 | Latency reduction (vs pure Python) | 25% |
 | Additional concurrent users supported | +15% |
 
-## Getting Started
+---
 
-```bash
-# Clone the repository
-git clone https://github.com/rehan243/Voice-AI-Platform.git
-cd Voice-AI-Platform
+> **Source Code**: The production source code for this project is maintained in a private repository due to proprietary and client confidentiality requirements. This repository documents the architecture, design decisions, and technical approach. For code-level discussions or collaboration inquiries, feel free to reach out.
 
-# Set up environment
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Start Kafka and dependencies
-docker-compose up -d
-
-# Run the gateway
-uvicorn gateway.websocket_handler:app --host 0.0.0.0 --port 8000
-
-# Run STT workers
-python stt_engine/whisper_inference.py --workers 4
-```
-
-## Environment Variables
-
-```bash
-KAFKA_BOOTSTRAP_SERVERS=localhost:9092
-AWS_REGION=us-east-1
-REDIS_URL=redis://localhost:6379
-DATABASE_URL=postgresql://user:pass@localhost:5432/voiceai
-STT_MODEL_PATH=/models/whisper-large-v3
-CUDA_VISIBLE_DEVICES=0,1
-```
 
 ## Author
 
