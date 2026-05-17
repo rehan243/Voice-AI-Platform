@@ -4,35 +4,31 @@ import os
 class ConfigLoader:
     def __init__(self, config_path: str):
         self.config_path = config_path
-        self.config = self.load_config()
+        self.config = {}
 
-    def load_config(self):
-        # load the config file and handle potential errors
-        if not os.path.exists(self.config_path):
+    def load(self) -> dict:
+        # check if the file exists
+        if not os.path.isfile(self.config_path):
             raise FileNotFoundError(f"Config file not found at {self.config_path}")
 
+        # read the json file
         with open(self.config_path, 'r') as file:
-            try:
-                return json.load(file)
-            except json.JSONDecodeError as e:
-                raise ValueError(f"Error decoding JSON: {e}")
+            self.config = json.load(file)
+
+        return self.config
 
     def get(self, key: str, default=None):
-        # get a specific configuration value or return default
+        # get a config value with a default fallback
         return self.config.get(key, default)
 
-    def set(self, key: str, value):
-        # set a specific configuration value and save it
+    def set(self, key: str, value) -> None:
+        # set a config value
         self.config[key] = value
-        self.save_config()
 
-    def save_config(self):
-        # save the current config back to the file
+    def save(self) -> None:
+        # save config back to file
         with open(self.config_path, 'w') as file:
             json.dump(self.config, file, indent=4)
 
-# example usage
-if __name__ == '__main__':
-    config_loader = ConfigLoader('config.json')
-    print(config_loader.get('some_key', 'default_value'))  # change 'some_key' as needed
-    # TODO: add more error handling and logging functionality
+# TODO: add support for environment variable overrides
+# can be handy to tweak settings without changing files
