@@ -1,48 +1,40 @@
 #!/bin/bash
 
-# this script is for running development tools like linting and testing
+# this script is for development tasks like linting and testing
 
 set -e  # exit immediately if a command exits with a non-zero status
 
-# function to run flake8 for linting
-run_lint() {
-    echo "running flake8 for linting"
-    flake8 src/ tests/
+# check if dependencies are installed
+check_dependencies() {
+    command -v flake8 >/dev/null 2>&1 || { echo "flake8 is not installed. Aborting." >&2; exit 1; }
+    command -v pytest >/dev/null 2>&1 || { echo "pytest is not installed. Aborting." >&2; exit 1; }
 }
 
-# function to run pytest for testing
+# run linter
+run_linter() {
+    echo "running linter..."
+    flake8 src/  # assuming the source code is under src/
+}
+
+# run tests
 run_tests() {
-    echo "running pytest for tests"
-    pytest tests/
+    echo "running tests..."
+    pytest tests/  # assuming test files are under tests/
 }
 
-# function to build and run docker container
-run_docker() {
-    echo "building and running docker container"
-    docker-compose up --build
+# build docker image
+build_docker_image() {
+    echo "building docker image..."
+    docker build -t voice-ai-platform .  # build the docker image
 }
 
-# checking for arguments
-if [ "$#" -eq 0 ]; then
-    echo "usage: $0 {lint|test|docker}"
-    exit 1
-fi
+# main function
+main() {
+    check_dependencies  # check if all necessary tools are installed
+    run_linter  # lint the code
+    run_tests  # run the test suite
+    build_docker_image  # build the docker image
+}
 
-case "$1" in
-    lint)
-        run_lint
-        ;;
-    test)
-        run_tests
-        ;;
-    docker)
-        run_docker
-        ;;
-    *)
-        echo "unknown command: $1"
-        exit 1
-        ;;
-esac
-
-# TODO: consider adding more commands for other dev tools
-echo "done"
+# execute the main function
+main
