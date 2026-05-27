@@ -4,23 +4,30 @@ import os
 class ConfigLoader:
     def __init__(self, config_path: str):
         self.config_path = config_path
-        self.config_data = self.load_config()
+        self.config = self.load_config()
 
     def load_config(self):
+        # check if the config file exists
         if not os.path.exists(self.config_path):
-            raise FileNotFoundError(f"Config file not found: {self.config_path}")
+            raise FileNotFoundError(f"Config file not found at {self.config_path}")
         
-        with open(self.config_path, 'r') as f:
+        # load the config file
+        with open(self.config_path, 'r') as config_file:
             try:
-                return json.load(f)
+                return json.load(config_file)
             except json.JSONDecodeError as e:
-                raise ValueError(f"Error parsing JSON: {e}")
+                raise ValueError(f"Error decoding JSON from config file: {e}")
 
     def get(self, key: str, default=None):
-        return self.config_data.get(key, default)
+        # get a value from the config, return default if not found
+        return self.config.get(key, default)
+
+    def __getitem__(self, key: str):
+        # allow dict-like access
+        return self.get(key)
 
 # example usage
 if __name__ == "__main__":
-    config_loader = ConfigLoader('config.json')
-    api_key = config_loader.get('api_key', 'default_key')
-    print(f"Loaded API Key: {api_key}")  # TODO: remove this before production
+    # TODO: update path to your config file
+    config_loader = ConfigLoader('path/to/your/config.json')
+    print(config_loader.get('some_key', 'default_value'))  # replace with your key
