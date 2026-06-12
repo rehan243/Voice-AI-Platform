@@ -1,40 +1,50 @@
 #!/bin/bash
 
-# this script is for development tasks like linting and testing
+# this script is for local development tasks
+# linting and testing for the project
 
 set -e  # exit immediately if a command exits with a non-zero status
 
-# check if dependencies are installed
-check_dependencies() {
-    command -v flake8 >/dev/null 2>&1 || { echo "flake8 is not installed. Aborting." >&2; exit 1; }
-    command -v pytest >/dev/null 2>&1 || { echo "pytest is not installed. Aborting." >&2; exit 1; }
-}
-
-# run linter
+# function to run linter
 run_linter() {
     echo "running linter..."
-    flake8 src/  # assuming the source code is under src/
+    flake8 src/  # check the source files for style violations
+    echo "linting completed"
 }
 
-# run tests
+# function to run tests
 run_tests() {
     echo "running tests..."
-    pytest tests/  # assuming test files are under tests/
+    pytest tests/  # execute tests in the tests directory
+    echo "all tests passed"
 }
 
-# build docker image
-build_docker_image() {
-    echo "building docker image..."
-    docker build -t voice-ai-platform .  # build the docker image
-}
-
-# main function
+# main function to handle commands
 main() {
-    check_dependencies  # check if all necessary tools are installed
-    run_linter  # lint the code
-    run_tests  # run the test suite
-    build_docker_image  # build the docker image
+    case "$1" in
+        lint)
+            run_linter
+            ;;
+        test)
+            run_tests
+            ;;
+        all)
+            run_linter
+            run_tests
+            ;;
+        *)
+            echo "usage: $0 {lint|test|all}"
+            exit 1  # invalid argument
+            ;;
+    esac
 }
 
-# execute the main function
-main
+# check if any arguments were provided
+if [ "$#" -eq 0 ]; then
+    echo "no command provided, running all tasks by default"
+    main all
+else
+    main "$1"
+fi
+
+# TODO: add docker command options for better integration later
