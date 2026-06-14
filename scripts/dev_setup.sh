@@ -1,34 +1,39 @@
 #!/bin/bash
 
-# this script sets up the development environment for the voice ai platform
+# this script sets up the development environment for the project
 
-set -e  # exit on error
+set -e  # exit immediately if a command exits with a non-zero status
 
-# check if docker is installed
-if ! command -v docker &> /dev/null
-then
-    echo "docker not found, please install it first"
+# check for required tools
+if ! command -v python3 &> /dev/null; then
+    echo "python3 is required, please install it"
     exit 1
 fi
 
-# run docker compose to set up services
-echo "starting up services with docker compose..."
-docker-compose up -d
-
-# run linter
-echo "running linter..."
-if ! flake8 src/; then
-    echo "linting issues found, please fix them"
+if ! command -v pip3 &> /dev/null; then
+    echo "pip3 is required, please install it"
     exit 1
 fi
+
+if ! command -v docker &> /dev/null; then
+    echo "docker is required, please install it"
+    exit 1
+fi
+
+# install required python packages
+echo "installing required python packages..."
+pip3 install -r requirements.txt
+
+# build docker image
+echo "building the docker image..."
+docker build -t voice-ai-platform .
 
 # run tests
 echo "running tests..."
-if ! pytest tests/; then
-    echo "some tests failed, check the output above"
-    exit 1
-fi
+pytest tests/
 
-# TODO: add coverage report generation
+# TODO: add linting step here
+echo "running linters..."
+flake8 src/
 
-echo "development setup is complete"
+echo "development setup complete"
