@@ -1,50 +1,41 @@
 #!/bin/bash
 
-# this script is for local development tasks
-# linting and testing for the project
+# this script is for setting up local dev tools
+# make sure to give it execute permissions with chmod +x scripts/dev_tools.sh
 
-set -e  # exit immediately if a command exits with a non-zero status
+echo "starting development tools setup..."
 
-# function to run linter
-run_linter() {
-    echo "running linter..."
-    flake8 src/  # check the source files for style violations
-    echo "linting completed"
-}
-
-# function to run tests
-run_tests() {
-    echo "running tests..."
-    pytest tests/  # execute tests in the tests directory
-    echo "all tests passed"
-}
-
-# main function to handle commands
-main() {
-    case "$1" in
-        lint)
-            run_linter
-            ;;
-        test)
-            run_tests
-            ;;
-        all)
-            run_linter
-            run_tests
-            ;;
-        *)
-            echo "usage: $0 {lint|test|all}"
-            exit 1  # invalid argument
-            ;;
-    esac
-}
-
-# check if any arguments were provided
-if [ "$#" -eq 0 ]; then
-    echo "no command provided, running all tasks by default"
-    main all
-else
-    main "$1"
+# check for required tools
+if ! command -v flake8 &> /dev/null; then
+    echo "flake8 not found, installing..."
+    pip install flake8
 fi
 
-# TODO: add docker command options for better integration later
+if ! command -v pytest &> /dev/null; then
+    echo "pytest not found, installing..."
+    pip install pytest
+fi
+
+# run linter
+echo "running linter..."
+flake8 src/ > lint_report.txt
+
+if [ $? -eq 0 ]; then
+    echo "linting passed, no issues found"
+else
+    echo "linting issues found, check lint_report.txt"
+fi
+
+# run tests
+echo "running tests..."
+pytest tests/ > test_report.txt
+
+if [ $? -eq 0 ]; then
+    echo "all tests passed!"
+else
+    echo "some tests failed, see test_report.txt for details"
+fi
+
+# TODO: add docker support to build and run the app locally
+
+echo "development tools setup complete!"
