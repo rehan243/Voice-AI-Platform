@@ -1,5 +1,5 @@
 """
-Kafka egress with DLQ. If brokers are flapping, we at least don't silently drop audio metadata.
+kafka egress with dlq. if brokers are flapping, we at least don't silently drop audio metadata.
 """
 from __future__ import annotations
 
@@ -15,7 +15,6 @@ from kafka.errors import KafkaError
 
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class KafkaProducerConfig:
     bootstrap_servers: str
@@ -27,7 +26,6 @@ class KafkaProducerConfig:
     linger_ms: int = 20
     max_retries: int = 5
     request_timeout_ms: int = 30_000
-
 
 class KafkaAudioProducer:
     def __init__(
@@ -115,7 +113,7 @@ class KafkaAudioProducer:
             fut.get(timeout=10)
             self._metrics["dlq"] += 1
         except Exception as e:
-            logger.critical("DLQ publish failed, data lost: %s", e)
+            logger.critical("dlq publish failed, data lost: %s", e)
 
     def flush(self) -> None:
         self._producer.flush()
