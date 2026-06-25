@@ -1,22 +1,24 @@
--- this view analyzes potential fraudulent voice interactions
--- based on user behavior and interaction patterns
+CREATE OR REPLACE VIEW fraud_analysis AS
+SELECT 
+    u.user_id,
+    COUNT(t.transaction_id) AS total_transactions,
+    SUM(t.amount) AS total_amount,
+    AVG(t.amount) AS avg_transaction_amount,
+    MAX(t.transaction_date) AS last_transaction_date,
+    CASE 
+        WHEN COUNT(t.transaction_id) > 10 THEN 'high_activity'
+        WHEN COUNT(t.transaction_id) BETWEEN 5 AND 10 THEN 'medium_activity'
+        ELSE 'low_activity'
+    END AS activity_level
+FROM 
+    users u
+JOIN 
+    transactions t ON u.user_id = t.user_id
+WHERE 
+    t.transaction_date >= CURRENT_DATE - INTERVAL '30 days'
+GROUP BY 
+    u.user_id;
 
-create or replace view fraud_analysis as
-select 
-    user_id,
-    count(case when interaction_type = 'voice' then 1 end) as voice_interaction_count,
-    count(case when interaction_type = 'text' then 1 end) as text_interaction_count,
-    avg(interaction_duration) as average_duration,
-    sum(case when is_fraudulent then 1 else 0 end) as total_fraudulent_interactions,
-    (count(case when is_fraudulent then 1 else 0 end) * 100.0 / nullif(count(*), 0)) as fraud_percentage
-from 
-    voice_interactions
-where 
-    interaction_date >= current_date - interval '30 days'
-group by 
-    user_id
-having 
-    fraud_percentage > 5 -- threshold for flagging potential fraud
+-- TODO: consider adding more filters based on transaction types or statuses
 
--- TODO: consider adding more filters or parameters for different time frames
--- this could help refine the analysis for specific use cases
+CREATE INDEX idx_fraud_user_id ON fraud_analysis(user_id);
