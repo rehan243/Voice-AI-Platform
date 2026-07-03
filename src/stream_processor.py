@@ -1,5 +1,5 @@
 """
-WebSocket audio in, VAD-gated segments out. Designed for "it mostly works at 3am" ops.
+websocket audio in, vad-gated segments out. designed for "it mostly works at 3am" ops.
 """
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ class AudioStreamProcessor:
         self._on_transcript = on_transcript
         self._vad = webrtcvad.Vad(cfg.vad_aggressiveness)
         self._bytes_per_frame = int(cfg.sample_rate * cfg.frame_ms / 1000) * 2
-        self._connections: Dict[str, "_ConnState"] = {}
+        self._connections: Dict[str, _ConnState] = {}
         self._lock = asyncio.Lock()
         self._accept_sem = asyncio.Semaphore(cfg.max_concurrent_ws)
 
@@ -52,7 +52,7 @@ class AudioStreamProcessor:
             self._connections.pop(call_id, None)
 
     async def handle_ws(self, websocket: WebSocket, call_id: str) -> None:
-        # Semaphore is coarse backpressure; still need per-call fairness in STT pools.
+        # semaphore is coarse backpressure; still need per-call fairness in stt pools.
         async with self._accept_sem:
             await websocket.accept()
             await self.register(call_id)
@@ -75,13 +75,14 @@ class AudioStreamProcessor:
                 await self.unregister(call_id)
                 try:
                     await websocket.close()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning("failed to close websocket: %s", e)
 
     async def _feed(self, call_id: str, pcm_s16le: bytes) -> Optional[str]:
         async with self._lock:
             state = self._connections.get(call_id)
         if state is None:
+            logger.warning(f"no connection state for call_id: {call_id}")
             return None
         return await state.push(pcm_s16le, self._stt, self._cfg.sample_rate)
 
@@ -138,5 +139,5 @@ class _ConnState:
         try:
             return (await stt_fn(audio, sample_rate)).strip() or None
         except Exception as e:
-            logger.warning("STT failed: %s", e)
+            logger.warning("stt failed: %s", e)
             return None
