@@ -1,25 +1,28 @@
-create or replace view fraud_detection_view as
-select 
+create or replace view fraud_detection as
+select
     v.transaction_id,
     v.user_id,
-    v.voice_sample,
-    v.timestamp,
+    v.voiceprint_id,
+    v.transaction_amount,
+    v.transaction_date,
     case 
-        when a.voice_score < 0.5 then 'high risk'
-        when a.voice_score >= 0.5 and a.voice_score < 0.8 then 'medium risk'
-        else 'low risk'
-    end as risk_level,
-    a.confidence_score
-from 
+        when v.transaction_amount > 1000 then 'high_value'
+        when v.transaction_amount between 500 and 1000 then 'medium_value'
+        else 'low_value'
+    end as value_category,
+    case 
+        when v.voiceprint_id is null then 'unverified'
+        when a.is_fraud = true then 'fraudulent'
+        else 'verified'
+    end as verification_status
+from
     voice_transactions v
-join 
-    voice_analysis a on v.transaction_id = a.transaction_id
-where 
-    v.timestamp >= now() - interval '30 days'
-    and a.voice_score is not null
-order by 
-    risk_level desc, 
-    a.confidence_score desc;
+left join
+    authentication_logs a on v.voiceprint_id = a.voiceprint_id
+where
+    v.transaction_date >= current_date - interval '30 days'
+    and (a.is_fraud is not null or v.voiceprint_id is null)
 
--- TODO: add more filters for specific user behaviors in the future
--- this view should help monitor and flag suspicious activities based on voice quality
+-- this view helps in identifying transactions that might need further review
+-- TODO: consider adding more filters based on user behavior
+-- remember to check performance with larger datasets
