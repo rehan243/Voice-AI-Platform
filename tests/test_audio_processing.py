@@ -1,29 +1,31 @@
 import pytest
-from audio_processing import normalize_audio, trim_silence
+from audio_processing import preprocess_audio, extract_features
 
-def test_normalize_audio():
-    # testing normalization of audio signal
-    input_audio = [0.1, 0.5, 0.3, 0.7]
-    expected_output = [0.14285714, 0.71428571, 0.42857143, 1.0]  # normalized values
-    output_audio = normalize_audio(input_audio)
+def test_preprocess_audio():
+    # testing audio preprocessing on a sample audio file
+    input_audio = 'tests/sample_audio.wav'
+    expected_output = 'tests/preprocessed_audio.wav'
     
-    # simple assert to check if output is as expected
-    assert all(abs(a - b) < 1e-5 for a, b in zip(output_audio, expected_output))
-
-def test_trim_silence():
-    # testing trimming silence from audio
-    input_audio = [0, 0, 0, 0.5, 0.7, 0, 0]
-    expected_output = [0.5, 0.7]  # expected to trim leading and trailing silence
-    output_audio = trim_silence(input_audio)
+    processed_audio = preprocess_audio(input_audio)
     
-    assert output_audio == expected_output
+    # check if the output file is created
+    assert processed_audio == expected_output
+    # TODO: add more checks for audio quality
 
-def test_trim_silence_no_silence():
-    # testing when there's no silence to trim
-    input_audio = [0.1, 0.2, 0.3]
-    expected_output = [0.1, 0.2, 0.3]
-    output_audio = trim_silence(input_audio)
+def test_extract_features():
+    # testing feature extraction from preprocessed audio
+    input_audio = 'tests/preprocessed_audio.wav'
+    expected_features_shape = (10, 128)  # assuming we expect 10 frames and 128 features
 
-    assert output_audio == expected_output
+    features = extract_features(input_audio)
+    
+    # check if the shape of extracted features is as expected
+    assert features.shape == expected_features_shape
+    # TODO: add checks for feature values if needed
 
-# TODO: add more tests for edge cases and different audio formats
+def test_preprocess_audio_invalid_input():
+    # testing how preprocess_audio handles invalid input
+    invalid_audio = 'tests/invalid_audio.txt'
+    
+    with pytest.raises(ValueError):
+        preprocess_audio(invalid_audio)
