@@ -91,7 +91,7 @@ class KafkaAudioProducer:
             if self._on_ok:
                 self._on_ok(topic)
         except KafkaError as e:
-            logger.error("kafka send failed -> DLQ: %s", e)
+            logger.error(f"kafka send failed -> DLQ: {e}")
             self._metrics["fail"] += 1
             self._dlq(topic, key, value, str(e))
         except Exception as e:
@@ -113,7 +113,7 @@ class KafkaAudioProducer:
             fut.get(timeout=10)
             self._metrics["dlq"] += 1
         except Exception as e:
-            logger.critical("dlq publish failed, data lost: %s", e)
+            logger.critical(f"dlq publish failed, data lost: {e}")
 
     def flush(self) -> None:
         self._producer.flush()
