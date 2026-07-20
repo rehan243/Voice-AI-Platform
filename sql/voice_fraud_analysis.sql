@@ -1,44 +1,26 @@
--- this view analyzes voice interactions for potential fraud
--- based on certain keyword patterns and call durations
+-- this view aggregates voice call data to identify potential fraud patterns
+-- we're focusing on calls with unusual durations and frequencies
 
-CREATE OR REPLACE VIEW voice_fraud_analysis AS
-WITH keyword_matches AS (
-    SELECT
-        call_id,
-        user_id,
-        transcript,
-        duration,
-        CASE
-            WHEN LOWER(transcript) LIKE '%fraud%' THEN 1
-            ELSE 0
-        END AS fraud_keyword
-    FROM
-        voice_calls
-    WHERE
-        processed = TRUE
-),
-aggregated_data AS (
-    SELECT
-        user_id,
-        COUNT(CASE WHEN fraud_keyword = 1 THEN 1 END) AS fraud_count,
-        AVG(duration) AS avg_duration
-    FROM
-        keyword_matches
-    GROUP BY
-        user_id
-)
-SELECT
-    ud.user_id,
-    ud.user_name,
-    ad.fraud_count,
-    ad.avg_duration
-FROM
-    user_details AS ud
-JOIN
-    aggregated_data AS ad ON ud.user_id = ad.user_id
-WHERE
-    ad.fraud_count > 0
-ORDER BY
-    ad.fraud_count DESC;
+create or replace view voice_fraud_analysis as
+select 
+    caller_id,
+    count(*) as call_count,
+    avg(call_duration) as avg_duration,
+    stddev(call_duration) as duration_stddev,
+    count(distinct callee_id) as unique_recipients
+from 
+    voice_calls
+where 
+    call_timestamp >= current_date - interval '30 days'
+group by 
+    caller_id
+having 
+    call_count > 20 
+    and avg_duration > 120
+    and duration_stddev > 30;
 
--- TODO: consider adding more filters or join conditions based on new requirements
+-- we might want to consider adding more metrics in the future
+-- also, think about indexing the caller_id for better performance
+
+-- let's test this view with some sample queries after creation
+-- select * from voice_fraud_analysis where call_count > 50;
