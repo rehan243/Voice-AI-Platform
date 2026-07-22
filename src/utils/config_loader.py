@@ -1,48 +1,35 @@
 import json
 import os
-from typing import Any, Optional
+from typing import Any, Dict
 
 class ConfigLoader:
-    def __init__(self, config_path: str):
+    def __init__(self, config_path: str) -> None:
         self.config_path = config_path
-        self.config = {}
+        self.config = self.load_config()
 
-    def load(self) -> dict:
-        """load configuration from the specified file"""
+    def load_config(self) -> Dict[str, Any]:
         if not os.path.exists(self.config_path):
-            raise FileNotFoundError(f"Config file not found at: {self.config_path}")
+            raise FileNotFoundError(f"Config file not found at {self.config_path}")
         
-        try:
-            with open(self.config_path, 'r') as file:
-                self.config = json.load(file)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Error decoding JSON from config file: {self.config_path}") from e
-        
-        return self.config
+        with open(self.config_path, 'r') as file:
+            try:
+                return json.load(file)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Error parsing JSON: {e}")
 
-    def get(self, key: str, default: Optional[Any] = None) -> Optional[Any]:
-        """get a value from the config by key"""
+    def get(self, key: str, default: Any = None) -> Any:
         return self.config.get(key, default)
 
     def set(self, key: str, value: Any) -> None:
-        """set a value in the config and save it"""
         self.config[key] = value
-        self._save()
+        self.save_config()
 
-    def _save(self) -> None:
-        """save the current config to the file"""
-        try:
-            with open(self.config_path, 'w') as file:
-                json.dump(self.config, file, indent=4)
-        except IOError as e:
-            raise IOError(f"Failed to save config to {self.config_path}") from e
+    def save_config(self) -> None:
+        with open(self.config_path, 'w') as file:
+            json.dump(self.config, file, indent=4)
 
-# example usage
+# usage example
 if __name__ == "__main__":
-    config_loader = ConfigLoader("config.json")
-    try:
-        config = config_loader.load()
-        print("Loaded config:", config)
-    except (FileNotFoundError, ValueError) as e:
-        print(e)
-    # TODO: add more functionality or validations as needed
+    config_loader = ConfigLoader('config.json')
+    print(config_loader.get('some_key', 'default_value'))  # TODO: replace with actual key
+    config_loader.set('new_key', 'new_value')  # TODO: update with real values to test
