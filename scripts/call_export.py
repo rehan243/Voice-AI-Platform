@@ -5,7 +5,7 @@ import csv
 import io
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Iterable, Iterator, Mapping, Sequence
+from typing import Iterable, Iterator, Mapping, Sequence, Optional
 
 
 @dataclass
@@ -18,13 +18,17 @@ class CallRow:
 
 
 def parse_row(r: Mapping[str, str]) -> CallRow:
-    return CallRow(
-        call_id=r["call_id"],
-        started_at=datetime.fromisoformat(r["started_at"]),
-        duration_sec=float(r["duration_sec"]),
-        agent_id=r["agent_id"],
-        disposition=r.get("disposition", "unknown"),
-    )
+    try:
+        return CallRow(
+            call_id=r["call_id"],
+            started_at=datetime.fromisoformat(r["started_at"]),
+            duration_sec=float(r["duration_sec"]),
+            agent_id=r["agent_id"],
+            disposition=r.get("disposition", "unknown"),
+        )
+    except (KeyError, ValueError) as e:
+        # log or handle the exception as needed
+        raise ValueError(f"Error parsing row: {e}") from e
 
 
 def to_csv(rows: Iterable[CallRow]) -> str:
