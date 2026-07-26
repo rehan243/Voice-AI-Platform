@@ -1,39 +1,41 @@
 #!/bin/bash
 
-# this script sets up the development environment for the project
+# this script sets up the development environment
 
-set -e  # exit immediately if a command exits with a non-zero status
-
-# check for required tools
-if ! command -v python3 &> /dev/null; then
-    echo "python3 is required, please install it"
+# check if docker is running
+if ! docker info > /dev/null 2>&1; then
+    echo "docker is not running. please start docker first."
     exit 1
 fi
 
-if ! command -v pip3 &> /dev/null; then
-    echo "pip3 is required, please install it"
+# install python dependencies
+echo "installing python dependencies..."
+pip install -r requirements.txt
+
+# check for linting issues
+echo "running linters..."
+flake8 src/ --max-line-length=88
+if [ $? -ne 0 ]; then
+    echo "linting errors found. please fix them."
     exit 1
 fi
-
-if ! command -v docker &> /dev/null; then
-    echo "docker is required, please install it"
-    exit 1
-fi
-
-# install required python packages
-echo "installing required python packages..."
-pip3 install -r requirements.txt
-
-# build docker image
-echo "building the docker image..."
-docker build -t voice-ai-platform .
 
 # run tests
 echo "running tests..."
 pytest tests/
+if [ $? -ne 0 ]; then
+    echo "some tests failed. please check the output above."
+    exit 1
+fi
 
-# TODO: add linting step here
-echo "running linters..."
-flake8 src/
+# build docker image
+echo "building docker image..."
+docker build -t voice-ai-platform .
 
-echo "development setup complete"
+# optional: run the container
+read -p "do you want to run the docker container? (y/n) " run_container
+if [[ "$run_container" == "y" ]]; then
+    docker run -p 5000:5000 voice-ai-platform
+fi
+
+echo "dev environment setup complete!"
