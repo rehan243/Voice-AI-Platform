@@ -1,35 +1,40 @@
 import json
 import os
-from typing import Any, Dict
 
 class ConfigLoader:
-    def __init__(self, config_path: str) -> None:
+    def __init__(self, config_path: str):
         self.config_path = config_path
-        self.config = self.load_config()
+        self.config_data = {}
 
-    def load_config(self) -> Dict[str, Any]:
+    def load(self) -> dict:
+        # load json config file
         if not os.path.exists(self.config_path):
             raise FileNotFoundError(f"Config file not found at {self.config_path}")
         
         with open(self.config_path, 'r') as file:
-            try:
-                return json.load(file)
-            except json.JSONDecodeError as e:
-                raise ValueError(f"Error parsing JSON: {e}")
+            self.config_data = json.load(file)
+        
+        return self.config_data
 
-    def get(self, key: str, default: Any = None) -> Any:
-        return self.config.get(key, default)
+    def get(self, key: str, default=None):
+        # get a specific config value
+        return self.config_data.get(key, default)
 
-    def set(self, key: str, value: Any) -> None:
-        self.config[key] = value
-        self.save_config()
+    def set(self, key: str, value):
+        # set a config value (not saving it yet)
+        self.config_data[key] = value
 
-    def save_config(self) -> None:
+    def save(self):
+        # save updated config back to file
         with open(self.config_path, 'w') as file:
-            json.dump(self.config, file, indent=4)
+            json.dump(self.config_data, file, indent=4)
 
-# usage example
+# example usage
 if __name__ == "__main__":
     config_loader = ConfigLoader('config.json')
-    print(config_loader.get('some_key', 'default_value'))  # TODO: replace with actual key
-    config_loader.set('new_key', 'new_value')  # TODO: update with real values to test
+    try:
+        config = config_loader.load()
+        print("Loaded config:", config)
+    except FileNotFoundError as e:
+        print(e)
+        # TODO: handle missing config more gracefully
