@@ -18,3 +18,7 @@ Experimented with a streaming ASR system and noticed that reducing the audio chu
 ### 2026-07-29
 
 Implemented streaming ASR with a focus on reducing latency during real-time inference. Noticed that increasing the frame rate from 100ms to 50ms improved responsiveness but also led to a significant rise in CPU usage, causing occasional drops in accuracy. Balancing latency and resource consumption is crucial; I'm considering dynamic frame rate adjustments based on system load to mitigate this.
+
+### 2026-08-03
+
+Reviewed streaming ASR/TTS latency and real-time inference today. Reinforced that measuring the change end-to-end beats reasoning about it in isolation — the numbers rarely match the intuition.
