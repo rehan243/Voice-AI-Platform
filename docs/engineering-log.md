@@ -22,3 +22,7 @@ Implemented streaming ASR with a focus on reducing latency during real-time infe
 ### 2026-08-03
 
 Reviewed streaming ASR/TTS latency and real-time inference today. Reinforced that measuring the change end-to-end beats reasoning about it in isolation — the numbers rarely match the intuition.
+
+### 2026-08-09
+
+Reviewed streaming ASR/TTS latency and real-time inference today. Reinforced that measuring the change end-to-end beats reasoning about it in isolation — the numbers rarely match the intuition.
