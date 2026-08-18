@@ -30,3 +30,7 @@ Reviewed streaming ASR/TTS latency and real-time inference today. Reinforced tha
 ### 2026-08-10
 
 Reviewed streaming ASR/TTS latency and real-time inference today. Reinforced that measuring the change end-to-end beats reasoning about it in isolation — the numbers rarely match the intuition.
+
+### 2026-08-18
+
+Reviewed streaming ASR/TTS latency and real-time inference today. Reinforced that measuring the change end-to-end beats reasoning about it in isolation — the numbers rarely match the intuition.
